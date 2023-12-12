@@ -1,5 +1,5 @@
 from random import randrange, getrandbits
-from math import sqrt, isqrt
+from math import isqrt
 
 
 def gcd(a, b):
