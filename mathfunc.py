@@ -1,5 +1,6 @@
 from random import randrange, getrandbits
-from math import sqrt
+from math import sqrt, isqrt
+
 
 def gcd(a, b):
     while b != 0:
@@ -7,6 +8,8 @@ def gcd(a, b):
         a = b
         b = c
     return a
+
+
 def is_prime(n, k=128):
     """ Test if a number is prime
 
@@ -60,6 +63,7 @@ def generate_prime_candidate(length):
     p |= (1 << length - 1) | 1
     return p
 
+
 # find n-bits prime number
 # this implementation uses the Miller-Rabin algorithm and is described in detail here:
 # https://medium.com/@ntnprdhmm/how-to-generate-big-prime-numbers-miller-rabin-49e6e6af32fb
@@ -78,6 +82,32 @@ def generate_prime_number(length=256):
             return p
 
 
+""" Iterative Function to calculate (x^n)%p
+    in O(logy) */"""
+
+
+def power(x, y, p):
+    res = 1  # Initialize result
+
+    x = x % p  # Update x if it is more
+    # than or equal to p
+
+    while (y > 0):
+
+        # If y is odd, multiply x with result
+        if (y & 1):
+            res = (res * x) % p
+
+            # y must be even now
+        y = y >> 1  # y = y/2
+        x = (x * x) % p
+
+    return res
+
+
+# Utility function to store prime
+# factors of a number
+
 def find_primefactors(s, n):
     # Print the number of 2s that divide n
     while (n % 2 == 0):
@@ -86,7 +116,7 @@ def find_primefactors(s, n):
 
     # n must be odd at this point. So we can
     # skip one element (Note i = i +2)
-    for i in range(3, int(sqrt(n)), 2):
+    for i in range(3, isqrt(n), 2):
 
         # While i divides n, print i and divide n
         while (n % i == 0):
@@ -103,7 +133,7 @@ def find_primefactors(s, n):
 
 # find the number of primitive roots modulo prime
 # this algorithm is described in detail here:
-# https://www.geeksforgeeks.org/find-the-number-of-primitive-roots-modulo-prime/
+# https://www.geeksforgeeks.org/primitive-root-of-a-prime-number-n-modulo-n/
 def find_primitive(n):
     s = set()
 
@@ -130,7 +160,7 @@ def find_primitive(n):
 
             # Check if r^((phi)/primefactors)
             # mod n is 1 or not
-            if (pow(r, phi // it, n) == 1):
+            if (power(r, phi // it, n) == 1):
                 flag = True
                 break
 

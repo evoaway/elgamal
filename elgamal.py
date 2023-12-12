@@ -16,12 +16,16 @@ class PrivateKey(object):
 
     :ivar a: Private key component
     :vartype a: integer
+
+    :ivar bits: Key size in bits
+    :vartype bits: integer
     """
 
-    def __init__(self, p=None, g=None, a=None):
+    def __init__(self, p=None, g=None, a=None, bits=None):
         self.p = p
         self.g = g
         self.a = a
+        self.bits = bits
 
 
 class PublicKey(object):
@@ -37,12 +41,16 @@ class PublicKey(object):
 
     :ivar b: Public key component
     :vartype b: integer
+
+    :ivar bits: Key size in bits
+    :vartype bits: integer
     """
 
-    def __init__(self, p=None, g=None, b=None):
+    def __init__(self, p=None, g=None, b=None, bits=None):
         self.p = p
         self.g = g
         self.b = b
+        self.bits = bits
 
 
 def generate_keys(length=256, generate_root=False):
@@ -63,7 +71,7 @@ def generate_keys(length=256, generate_root=False):
         g = 2
     a = randint(1, p - 1)
     b = pow(g, a, p)
-    return PrivateKey(p, g, a), PublicKey(p, g, b)
+    return PrivateKey(p, g, a, length), PublicKey(p, g, b, length)
 
 
 def sign(m, private_key, hash_func=sha256):
@@ -84,6 +92,28 @@ def verify(m, r, s, public_key, hash_func=sha256):
         v2 = pow(public_key.g, hash_num, public_key.p)
         return v1 == v2
     return False
+
+
+def encrypt(m, public_key):
+    y = []
+    chunks, chunk_size = len(m), public_key.bits // 8
+    enc_msg = [m[i:i + chunk_size] for i in range(0, chunks, chunk_size)]
+    k = randint(1, public_key.p - 1)
+    x = pow(public_key.g, k, public_key.p)
+    for i in enc_msg:
+        plaintext = int.from_bytes(i.encode(), 'big')
+        y.append((plaintext * pow(public_key.b, k, public_key.p)) % public_key.p)
+    return x, y
+
+
+def decrypt(cipher_text, private_key):
+    x, m = cipher_text
+    message = []
+    s = pow(x, private_key.a, private_key.p)
+    for i in m:
+        plaintext = (i * pow(s, -1, private_key.p)) % private_key.p
+        message.append(plaintext.to_bytes((plaintext.bit_length() + 7) // 8, 'big').decode())
+    return ''.join(message)
 
 
 def int_from_hex(hexadecimal):

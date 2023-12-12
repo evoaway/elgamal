@@ -32,5 +32,31 @@ class TestStringMethods(unittest.TestCase):
         message2 = "I feel bad"
         self.assertFalse(verify(message2, r, s, public_key))
 
+    def test_encrypt_short_msg(self):
+        # message len <= key length
+        message = "Veni, vidi, vici"
+        private_key, public_key = generate_keys()
+        enc_message = encrypt(message, public_key)
+        dec_message = decrypt(enc_message, private_key)
+        self.assertEqual(message, dec_message)
+
+    def test_encrypt_long_msg(self):
+        # message len <= key length
+        message = ("Look, if you had one shot, one opportunity"
+                   "To seize everything you ever wanted"
+                   "One moment"
+                   "Would you capture it or just let it slip?")
+        private_key, public_key = generate_keys()
+        enc_message = encrypt(message, public_key)
+        dec_message = decrypt(enc_message, private_key)
+        self.assertEqual(message, dec_message)
+
+    def test_encrypt_incorrect_key(self):
+        message = "Veni, vidi, vici"
+        private_key, public_key = generate_keys()
+        private_key2, public_key2 = generate_keys()
+        enc_message = encrypt(message, public_key)
+        self.assertRaises(UnicodeDecodeError, decrypt, enc_message, private_key2)
+
 if __name__ == '__main__':
     unittest.main()
